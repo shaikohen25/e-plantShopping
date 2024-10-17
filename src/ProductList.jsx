@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { addItem } from './CartSlice';
 import './ProductList.css';
 
 function ProductList() {
   const dispatch = useDispatch();
+  const cartItems = useSelector(state => state.cart.items); // Retrieve cart items from Redux
   const [addedToCart, setAddedToCart] = useState({});
 
   const plantsArray = [
@@ -57,21 +58,36 @@ function ProductList() {
       plants: [
         { name: "ZZ Plant", image: "https://images.unsplash.com/photo-1632207691143-643e2a9a9361?q=80&w=464&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", description: "Thrives in low light and requires minimal watering.", cost: "$25" },
         { name: "Pothos", image: "https://cdn.pixabay.com/photo/2018/11/15/10/32/plants-3816945_1280.jpg", description: "Tolerates neglect and can grow in various conditions.", cost: "$10" },
-        { name: "Snake Plant", image: "https://cdn.pixabay.com/photo/2021/01/22/06/04/snake-plant-5939187_1280.jpg", description: "Hardy plant that survives in low light and irregular watering.", cost: "$15" },
-        { name: "Jade Plant", image: "https://cdn.pixabay.com/photo/2017/02/07/01/47/jade-plant-2040098_1280.jpg", description: "Drought-tolerant and easy to care for.", cost: "$18" },
-        { name: "Cast Iron Plant", image: "https://cdn.pixabay.com/photo/2017/08/01/19/38/wax-flower-2568149_1280.jpg", description: "Survives in low light and low humidity.", cost: "$22" },
-        { name: "Aglaonema", image: "https://cdn.pixabay.com/photo/2016/11/21/17/07/green-1843676_1280.jpg", description: "Low maintenance and can thrive in low light.", cost: "$20" }
+        { name: "Snake Plant", image: "https://cdn.pixabay.com/photo/2021/01/22/06/04/snake-plant-5939187_1280.jpg", description: "Hardy plant that can survive low light and infrequent watering.", cost: "$15" },
+        { name: "Jade Plant", image: "https://cdn.pixabay.com/photo/2018/03/23/12/41/jade-plant-3251332_1280.jpg", description: "Easy to care for and can live for years.", cost: "$20" },
+        { name: "Spider Plant", image: "https://cdn.pixabay.com/photo/2018/07/11/06/47/chlorophytum-3530413_1280.jpg", description: "Tolerant of low light and irregular watering.", cost: "$12" },
+        { name: "Peace Lily", image: "https://cdn.pixabay.com/photo/2019/06/12/14/14/peace-lilies-4269365_1280.jpg", description: "Survives in low light and purifies air.", cost: "$18" }
       ]
     }
   ];
 
+  useEffect(() => {
+    // When cart items change, update the addedToCart state
+    const updatedCart = cartItems.reduce((acc, item) => {
+      acc[item.name] = true;
+      return acc;
+    }, {});
+    setAddedToCart(updatedCart);
+  }, [cartItems]);
+
   const handleAddToCart = (plant) => {
-    dispatch(addItem(plant));
+    dispatch(addItem({ ...plant, quantity: 1 })); // Dispatch the addItem action with quantity initialized to 1
     setAddedToCart({ ...addedToCart, [plant.name]: true });
+  };
+
+  // Calculate total quantity of items in the cart
+  const calculateTotalQuantity = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
   return (
     <div className="product-grid">
+      <h2>Total Items in Cart: {calculateTotalQuantity()}</h2> {/* Display total quantity */}
       {plantsArray.map((category) => (
         <div key={category.category}>
           <h2>{category.category}</h2>
@@ -98,3 +114,4 @@ function ProductList() {
 }
 
 export default ProductList;
+
